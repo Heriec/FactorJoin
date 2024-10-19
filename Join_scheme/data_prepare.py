@@ -252,6 +252,7 @@ def process_stats_data(data_path, model_folder, n_bins=500, bucket_method="greed
     if not data_path.endswith(".csv"):
         data_path += "/{}.csv"
     schema = gen_stats_light_schema(data_path)
+    # 获取等值key有哪些以及join key所涉及的所有键名
     all_keys, equivalent_keys = identify_key_values(schema)
     if actual_data is None:
         actual_data = dict()
@@ -266,37 +267,41 @@ def process_stats_data(data_path, model_folder, n_bins=500, bucket_method="greed
         table_name = table_obj.table_name
         null_values[table_name] = dict()
         key_attrs[table_name] = []
+        # 获取表数据
         if table_name in actual_data:
             df_rows = copy.deepcopy(actual_data[table_name])
         else:
             df_rows = read_table_csv(table_obj, db_name="stats")
         for attr in df_rows.columns:
+            # 如果列是某个join key
             if attr in all_keys:
                 table_key_lens[attr] = len(df_rows)
                 key_data[attr] = df_rows[attr].values
-                # the nan value of id are set to -1, this is hardcoded.
+                # the nan value of id are set to -1, this is hardcoded. 将所有的 NaN 值替换为 -1，并将 -1 设置为该属性的空值
                 key_data[attr][np.isnan(key_data[attr])] = -1
                 key_data[attr][key_data[attr] < 0] = -1
                 null_values[table_name][attr] = -1
-                key_data[attr] = copy.deepcopy(key_data[attr])[key_data[attr] >= 0]
+                key_data[attr] = copy.deepcopy(key_data[attr])[key_data[attr] >= 0] # 复制并过滤掉小于零的值。
                 # if the all keys have exactly one appearance, we consider them primary keys
-                # we set a error margin of 0.01 in case of data mis-write.
+                # we set a error margin of 0.01 in case of data mis-write. 如果一个键的唯一值的数量几乎等于该键的总数量（误差范围允许 1% 的差异），则认为它是主键
                 if len(np.unique(key_data[attr])) >= len(key_data[attr]) * 0.99:
                     primary_keys.append(attr)
-                sample_rate[attr] = 1.0
+                sample_rate[attr] = 1.0 # 设置采样率为 1.0，这意味着所有数据都会被考虑。
                 key_attrs[table_name].append(attr)
             else:
+                # 如果当前列不是一个键，则计算最小值并减去 100 作为该属性的空值表示，并将所有的 NaN 值替换为这个值。
                 temp = df_rows[attr].values
                 null_values[table_name][attr] = np.nanmin(temp) - 100
                 temp[np.isnan(temp)] = null_values[table_name][attr]
         data[table_name] = df_rows
-
+    #### 等价键分桶 
     all_bin_modes = dict()
     bin_size = dict()
     binned_data = dict()
     optimal_buckets = dict()
     all_bin_means = dict()
     all_bin_width = dict()
+    # 遍历等价键组
     for PK in equivalent_keys:
         print(f"bucketizing equivalent key group:", equivalent_keys[PK])
         group_data = {}

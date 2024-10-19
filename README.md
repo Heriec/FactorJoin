@@ -65,7 +65,7 @@ We use two query workloads to evalute our results, STATS-CEB and IMDB-JOB.
   
   ### First run the following command to train the models
   ```
-  python run_experiment.py --dataset stats \
+  python run_experiment.py run_experiment.py stats \
          --generate_models \
          --data_path ./End-to-End-CardEst-Benchmark/datasets/stats_simplified/{}.csv \
          --model_path checkpoints/ \

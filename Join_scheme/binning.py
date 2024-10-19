@@ -371,17 +371,27 @@ def greedy_bucketize(data, sample_rate, n_bins=30, primary_keys=[], return_data=
     data_lens = []
     curr_pk = []
     for key in data:
+        # 不需要对主键进行分桶，不是主键则计算其唯一值和出现次数，并记录键的顺序和数据长度
         if key not in primary_keys:
             unique_values[key] = np.unique(data[key], return_counts=True)
             key_orders.append(key)
             data_lens.append(len(data[key]))
         else:
             curr_pk.append(key)
+    # 按数据长度降序排列键（join key所在表数据越多的排前面）
     key_orders = [key_orders[i] for i in np.argsort(data_lens)[::-1]]
     remaining_bins = n_bins
     start_key = key_orders[0]
     curr_bins = None
     curr_bin_means = None
+    
+    """
+    对每个键进行分桶
+    1. 对于最后一个键，使用所有剩余的分桶
+    2. 对于其他键，分配一半的剩余分桶
+    3. 使用 equal_freq_binning 函数对初始键进行等频分桶
+    4. 使用 apply_binning_to_data 函数将分桶应用到其他键的数据上
+    """
     for key in key_orders:
         if key == key_orders[-1]:
             # least key value use up all remaining bins, otherwise use half of it
@@ -395,7 +405,7 @@ def greedy_bucketize(data, sample_rate, n_bins=30, primary_keys=[], return_data=
                                                               data[start_key], assign_bins,
                                                               unique_values[key][0], unique_values[key][1])
         remaining_bins = n_bins - len(curr_bins)
-
+    # 将现有的分桶应用到所有数据上
     new_data, best_buckets, curr_bins = bin_all_data_with_existing_binning(curr_bins, data, sample_rate, curr_pk,
                                                                            return_data)
     best_buckets = Bucket_group(best_buckets, start_key, sample_rate, curr_bins, primary_keys=curr_pk)
