@@ -14,3 +14,5 @@ brad.egg-info
 *.xml
 
 Debug
+
+logs
