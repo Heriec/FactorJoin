@@ -34,7 +34,7 @@ We use two query workloads to evalute our results, STATS-CEB and IMDB-JOB.
    After downloading the dataset, execute the following script to convert the date_time into integers.
    ```bash
    python run_experiment.py --dataset stats --preprocess_data \
-                            --data_folder /home/ubuntu/End-to-End-CardEst-Benchmark/datasets/stats_simplified/
+                            --data_folder /workspace/FactorJoin/End-to-End-CardEst-Benchmark/datasets/stats_simplified/
    ```
    
    The STATS-CEB benchmark query workload can be found at: 
