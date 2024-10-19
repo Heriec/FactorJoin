@@ -1,0 +1,24 @@
+{
+    // 使用 IntelliSense 了解相关属性。 
+    // 悬停以查看现有属性的描述。
+    // 欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "train debug",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "run_experiment.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--dataset", "stats",
+                "--generate_models",
+                "--data_path", "${workspaceFolder}/End-to-End-CardEst-Benchmark/datasets/stats_simplified/{}.csv",
+                "--model_path", "checkpoints",
+                "--n_dim_dist", "2",
+                "--n_bins", "200",
+                "--bucket_method", "greedy",
+            ]
+        }
+    ]
+}
