@@ -247,16 +247,21 @@ class Bound_ensemble:
         tables_all, table_queries, join_cond, join_keys = self.parse_query_simple(query_str)
         equivalent_group = get_join_hyper_graph(join_keys, self.equivalent_keys)
         if self.bns is not None:
+            # 用于从贝叶斯网络模型中获取每个表的身份属性的概率分布，并将其转换为等价变量的形式
+            # 其实就是获得factor graphs
+            # 好像贝叶斯网络模型这里就是获取到了树形结构的贝叶斯模型了，也就是应用了分解联合分布的chow-liu算法
             conditional_factors = self.get_all_id_conidtional_distribution_bn(table_queries, join_keys,
                                                                               equivalent_group)
         else:
             conditional_factors = self.get_all_id_conidtional_distribution_sample(query_str, query_name, tables_all,
                                                                                   join_keys)
+        # 就是论文中的VE变量消除, 得到生成所有变量的最佳消除顺序
         optimal_order, tables_involved, relevant_keys = self.get_optimal_elimination_order(equivalent_group, join_keys,
                                                                                            conditional_factors)
         res = None
         for key_group in optimal_order:
             tables = tables_involved[key_group]
+            # 使用树形结构（PGM，即概率图模型）学习到的分布
             res = self.eliminate_one_key_group(tables, key_group, conditional_factors, relevant_keys)
         return res
 

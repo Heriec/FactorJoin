@@ -19,6 +19,20 @@
                 "--n_bins", "200",
                 "--bucket_method", "greedy",
             ]
+        },
+        {
+            "name": "evaluate debug",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "run_experiment.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--dataset", "stats",
+                "--evaluate",
+                "--model_path", "checkpoints/model_stats_greedy_200.pkl",
+                "--query_file_location", "${workspaceFolder}/End-to-End-CardEst-Benchmark/workloads/stats_CEB/sub_plan_queries/stats_CEB_sub_queries.sql",
+                "--save_folder", "checkpoints/"
+            ]
         }
     ]
 }
